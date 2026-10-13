@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aventura Lectora</title>
+<meta name="description" content="Aventura Lectora: cuentos digitales interactivos para fortalecer la comprensión literal en cuarto grado.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@600;800&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<a class="saltar" href="#app">Saltar al contenido</a>
+<header id="barra" class="barra"></header>
+<main id="app" class="pagina" tabindex="-1"></main>
+<footer id="pie" class="pie"></footer>
+<div id="avisos" class="avisos" aria-live="polite"></div>
+
+<!-- Biblioteca de gráficos incluida en el repositorio (no depende de internet externo) -->
+<script src="js/vendor/chart.umd.js"></script>
+<!-- Orden de carga: configuración, utilidades, contenido, datos, pantallas, arranque -->
+<script src="js/firebase-config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/content-seed.js"></script>
+<script src="js/illustrations.js"></script>
+<script src="js/store-local.js"></script>
+<script src="js/store-firebase.js"></script>
+<script src="js/activities.js"></script>
+<script src="js/student.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
