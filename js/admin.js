@@ -126,7 +126,7 @@
     async function entrar(ev) {
       ev.preventDefault();
       try { await S().adminLogin(correo.value.trim(), clave.value); D = null; AL.navegar(); }
-      catch (e) { error.textContent = e.message; error.hidden = false; }
+      catch (e) { console.error(e); error.textContent = e.code ? AL.explicarError(e).causa + ' (' + e.code + ')' : e.message; error.hidden = false; }
     }
     async function recuperar() {
       try { await S().adminRecuperar(correo.value.trim()); U.aviso('Revise su correo.'); }

@@ -113,6 +113,19 @@
     descargarCSV: descargarCSV };
   AL.evaluar = evaluar;
 
+  /* Traduce un error de Firebase a una causa concreta, para saber qué revisar en la consola. */
+  AL.explicarError = function (e) {
+    const c = String((e && e.code) || ''), m = String((e && e.message) || e || '');
+    let causa = 'Revisa la conexión a internet e inténtalo de nuevo.';
+    if (/operation-not-allowed|admin-restricted-operation/.test(c + m)) causa = 'El acceso «Anónimo» no está habilitado en Firebase (Authentication → Método de acceso).';
+    else if (/permission-denied|insufficient permissions/i.test(c + m)) causa = 'Firestore rechazó la operación. Falta publicar las reglas de firestore.rules (Firestore Database → Reglas).';
+    else if (/not-found|failed-precondition|database .* does not exist/i.test(c + m)) causa = 'La base de datos de Firestore no está creada (Firestore Database → Crear base de datos).';
+    else if (/api-key|configuration-not-found|invalid-api-key/i.test(c + m)) causa = 'Authentication no está activado en el proyecto de Firebase (Authentication → Comenzar).';
+    else if (/unauthorized-domain/.test(c + m)) causa = 'Este dominio no está autorizado en Firebase (Authentication → Configuración → Dominios autorizados).';
+    else if (/unavailable|network|offline/i.test(c + m)) causa = 'No se pudo conectar con Firebase. Revisa internet o desactiva el bloqueador del navegador para esta página.';
+    return { causa: causa, detalle: (c ? c + ' · ' : '') + m.slice(0, 200) };
+  };
+
   AL.LETRAS = ['A', 'B', 'C', 'D'];
   /* Fases del estudio. Cada cuento pertenece a una fase y cada respuesta se guarda con la fase de su cuento. */
   AL.FASES = { inicial: 'Diagnóstico inicial', intervencion: 'Intervención', cierre: 'Cierre' };

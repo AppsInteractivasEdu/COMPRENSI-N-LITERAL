@@ -88,7 +88,8 @@
     } catch (e) {
       console.error(e);
       U.limpiar(app).appendChild(h('section', { class: 'tarjeta' }, h('h1', {}, 'Algo no funcionó'),
-        h('p', {}, 'No se pudo mostrar esta pantalla. Revisa la conexión y vuelve a intentarlo.'),
+        h('p', {}, 'No se pudo mostrar esta pantalla. ' + AL.explicarError(e).causa),
+        h('p', { class: 'suave' }, AL.explicarError(e).detalle),
         h('a', { class: 'boton', href: '#inicio' }, 'Volver al inicio')));
     }
     if (ev) window.scrollTo(0, 0);

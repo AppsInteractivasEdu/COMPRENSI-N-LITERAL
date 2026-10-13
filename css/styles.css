@@ -246,3 +246,5 @@ mark { background: var(--sol); color: #1C2B39; border-radius: 4px; padding: 0 3p
 html[data-anim="no"] * { transition: none !important; animation: none !important; }
 
 @media (min-width: 700px) { .barra { position: sticky; top: env(safe-area-inset-top, 0px); } }
+
+.error .detalle { display: block; font-weight: 400; font-size: .8rem; margin-top: 4px; word-break: break-word; }

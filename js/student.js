@@ -75,9 +75,20 @@
         error.textContent = 'Escribe tu nombre y tu apellido. Por ejemplo: Ana Pérez.';
         error.hidden = false; campo.focus(); return;
       }
-      await AL.store.crearSesion(campo.value);
-      await AL.cargarEstudiante();
-      location.hash = '#mapa';
+      const boton = ev.target.querySelector('button[type="submit"]');
+      boton.disabled = true; error.hidden = true;
+      try {
+        await AL.store.crearSesion(campo.value);
+        await AL.cargarEstudiante();
+        location.hash = '#mapa';
+      } catch (e) {
+        console.error(e);
+        const x = AL.explicarError(e);
+        U.limpiar(error);
+        error.appendChild(h('span', {}, 'No se pudo entrar. ' + x.causa));
+        error.appendChild(h('small', { class: 'detalle' }, x.detalle));
+        error.hidden = false; boton.disabled = false;
+      }
     }
     cont.appendChild(h('section', { class: 'tarjeta angosta' },
       h('h1', {}, '¡Hola!'),
