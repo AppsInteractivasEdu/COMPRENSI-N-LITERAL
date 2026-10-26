@@ -177,6 +177,10 @@ legend { font-weight: 700; padding-inline: 6px; }
 .lienzo { position: relative; height: 280px; }
 .lienzo.bajo { height: 200px; }
 .tabla-scroll { overflow-x: auto; }
+/* Panel de administración: más ancho, y la primera columna (nombre) queda fija al desplazar. */
+.pagina.ancha { max-width: 1500px; }
+.tabla-scroll th:first-child, .tabla-scroll td:first-child { position: sticky; left: 0; background: var(--tarjeta); z-index: 1; font-weight: 700; box-shadow: 2px 0 0 var(--borde); }
+.tabla-scroll td:first-child { min-width: 130px; }
 table { width: 100%; border-collapse: collapse; font-size: .95rem; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--borde); vertical-align: top; }
 th { font-size: .85rem; color: var(--tinta-suave); white-space: nowrap; }
