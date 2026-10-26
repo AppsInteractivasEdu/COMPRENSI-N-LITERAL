@@ -117,6 +117,7 @@
   AL.explicarError = function (e) {
     const c = String((e && e.code) || ''), m = String((e && e.message) || e || '');
     let causa = 'Revisa la conexión a internet e inténtalo de nuevo.';
+    if (/nombre-ocupado/.test(c + m)) return { causa: 'Este nombre ya está registrado en otro dispositivo. Si eres tú, usa el mismo dispositivo con el que empezaste; si no, avisa a tu profesor.', detalle: '' };
     if (/operation-not-allowed|admin-restricted-operation/.test(c + m)) causa = 'El acceso «Anónimo» no está habilitado en Firebase (Authentication → Método de acceso).';
     else if (/permission-denied|insufficient permissions/i.test(c + m)) causa = 'Firestore rechazó la operación. Falta publicar las reglas de firestore.rules (Firestore Database → Reglas).';
     else if (/not-found|failed-precondition|database .* does not exist/i.test(c + m)) causa = 'La base de datos de Firestore no está creada (Firestore Database → Crear base de datos).';

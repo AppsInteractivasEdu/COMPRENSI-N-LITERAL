@@ -208,9 +208,22 @@
         if (!auth.currentUser) await auth.signInAnonymously();
         await contenido();
         const norm = AL.ui.normalizarNombre(nombre);
-        const id = uid() + '_' + norm.replace(/ñ/g, 'n').replace(/\s+/g, '-');
+        const slug = norm.replace(/ñ/g, 'n').replace(/\s+/g, '-');
+        const id = uid() + '_' + slug;
         const ref = db.collection('sesiones').doc(id);
         const previa = await ref.get();
+        /* Un nombre solo puede pertenecer a un dispositivo: el candado nombres/<nombre> lo reserva
+         * la primera vez. Si otro dispositivo ya lo tiene, no se permite crear un segundo registro. */
+        const refNombre = db.collection('nombres').doc(slug);
+        const dueno = await refNombre.get();
+        if (dueno.exists && dueno.data().uid !== uid()) {
+          const err = new Error('nombre-ocupado');
+          err.code = 'nombre-ocupado';
+          throw err;
+        }
+        if (!dueno.exists) {
+          await refNombre.set({ uid: uid(), nombreNorm: norm, fecha: new Date().toISOString() });
+        }
         let s;
         if (previa.exists) s = previa.data();
         else {
@@ -300,6 +313,9 @@
         ses.forEach(function (s) { ids[s.id] = true; uids[s.uid] = true; });
         await borrarTodo('respuestas', function (r) { return r.esPrueba || ids[r.sesionId]; });
         await borrarTodo('sesiones', function (s) { return s.esPrueba; });
+        const nombresPrueba = {};
+        ses.forEach(function (s) { nombresPrueba[s.nombreNorm.replace(/ñ/g, 'n').replace(/\s+/g, '-')] = true; });
+        await borrarTodo('nombres', function (n, nid) { return nombresPrueba[nid]; });
         olvidar();
         return ses.length;
       },
@@ -309,12 +325,14 @@
         const uidSes = id.split('_')[0];
         const otras = (await todos('sesiones')).filter(function (s) { return s.id !== id && s.uid === uidSes; });
         if (!otras.length) await borrarTodo('marcas', function (m) { return m.uid === uidSes; });
+        /* Libera el nombre para que esa persona pueda volver a registrarse si se desea. */
+        await db.collection('nombres').doc(id.split('_').slice(1).join('_')).delete();
         await db.collection('sesiones').doc(id).delete();
         olvidar();
         return true;
       },
       reiniciarTodo: async function () {
-        for (const col of ['respuestas', 'sesiones', 'marcas', 'preguntas', 'claves', 'cuentos']) await borrarTodo(col);
+        for (const col of ['respuestas', 'sesiones', 'nombres', 'marcas', 'preguntas', 'claves', 'cuentos']) await borrarTodo(col);
         await sembrar();
         return true;
       },
