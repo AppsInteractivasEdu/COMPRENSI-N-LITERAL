@@ -456,13 +456,20 @@
   function registros(cont) {
     const pub = D.preguntas.filter(function (p) { return p.publicada; });
     cont.appendChild(h('section', { class: 'tarjeta' }, h('h2', {}, 'Progreso por sesión'),
-      tabla(['Estudiante', 'Fases con respuestas', 'Inicio', 'Lecturas', 'Preguntas respondidas', 'Correctas (primer intento)', 'Registro'],
+      tabla(['Estudiante', 'Fases con respuestas', 'Inicio', 'Lecturas', 'Preguntas respondidas', 'Correctas (primer intento)', 'Registro', 'Acciones'],
         D.sesiones.slice().sort(function (a, b) { return a.inicio < b.inicio ? 1 : -1; }).map(function (s) {
           const rs = intentos(D.respuestas.filter(function (r) { return r.sesionId === s.id; }), 'primero');
           const dist = new Set(rs.map(function (r) { return r.preguntaId; })).size;
           return [s.nombre, Object.keys(AL.FASES).filter(function (f) { return rs.some(function (r) { return r.momento === f; }); }).map(function (f) { return AL.FASES[f]; }).join(', ') || '—', U.fecha(s.inicio), Object.keys(s.lecturas || {}).length + ' de ' + D.cuentos.filter(function (c) { return c.publicado; }).length,
-            dist + ' de ' + pub.length, rs.filter(correcta).length, s.esPrueba ? 'Prueba' : 'Real'];
-        }), 'Aún no hay sesiones de estudiantes en este dispositivo.')));
+            dist + ' de ' + pub.length, rs.filter(correcta).length, s.esPrueba ? 'Prueba' : 'Real',
+            h('button', { class: 'boton claro chico', type: 'button', onclick: async function () {
+              const n = D.respuestas.filter(function (r) { return r.sesionId === s.id; }).length;
+              if (!await U.confirmar('¿Eliminar a «' + s.nombre + '»?', 'Se borrarán esta sesión y sus ' + n + ' respuestas. No se puede deshacer. Si el estudiante vuelve a entrar, empezará de cero.', 'Eliminar')) return;
+              try { await S().borrarSesion(s.id); D = null; U.aviso('Registro de ' + s.nombre + ' eliminado.'); AL.navegar(); }
+              catch (e) { console.error(e); U.aviso('No se pudo eliminar: ' + AL.explicarError(e).causa, 'error'); }
+            } }, 'Eliminar')];
+        }), 'Aún no hay sesiones de estudiantes.'),
+      h('p', { class: 'suave' }, 'Eliminar borra la sesión y todas sus respuestas en todas las fases. Úselo para registros de prueba o entradas equivocadas; no borre participantes reales sin respaldar antes con la exportación CSV.')));
     const ult = D.respuestas.slice().sort(function (a, b) { return a.fecha < b.fecha ? 1 : -1; }).slice(0, 100);
     cont.appendChild(h('section', { class: 'tarjeta' }, h('h2', {}, 'Últimas respuestas'),
       h('p', { class: 'suave' }, 'Se muestran las 100 más recientes de ' + D.respuestas.length + '. Para el registro completo use la exportación en Resultados.'),

@@ -191,6 +191,13 @@
       lista(d.respuestas).forEach(function (r) { if (r.esPrueba || !d.sesiones[r.sesionId]) delete d.respuestas[r.id]; });
       guardar(); return ok(n);
     },
+    borrarSesion: function (id) {
+      const d = db();
+      delete d.sesiones[id];
+      lista(d.respuestas).forEach(function (r) { if (r.sesionId === id) delete d.respuestas[r.id]; });
+      if (leer(CLAVE_SESION) === id) escribir(CLAVE_SESION, null);
+      guardar(); return ok(true);
+    },
     reiniciarTodo: function () { mem = inicial(); guardar(); escribir(CLAVE_SESION, null); return ok(true); },
 
     /* ---------- acceso administrativo (SIMULADO en modo local) ---------- */

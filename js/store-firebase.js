@@ -303,6 +303,16 @@
         olvidar();
         return ses.length;
       },
+      borrarSesion: async function (id) {
+        await borrarTodo('respuestas', function (r) { return r.sesionId === id; });
+        /* Las marcas pertenecen al dispositivo (uid); se borran solo si no queda otra sesión con ese uid. */
+        const uidSes = id.split('_')[0];
+        const otras = (await todos('sesiones')).filter(function (s) { return s.id !== id && s.uid === uidSes; });
+        if (!otras.length) await borrarTodo('marcas', function (m) { return m.uid === uidSes; });
+        await db.collection('sesiones').doc(id).delete();
+        olvidar();
+        return true;
+      },
       reiniciarTodo: async function () {
         for (const col of ['respuestas', 'sesiones', 'marcas', 'preguntas', 'claves', 'cuentos']) await borrarTodo(col);
         await sembrar();
