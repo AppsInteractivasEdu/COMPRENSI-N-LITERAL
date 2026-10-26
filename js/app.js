@@ -66,6 +66,7 @@
     if (AL.alSalir) { AL.alSalir(); AL.alSalir = null; }
     const foco = document.activeElement && document.activeElement.id;
     const app = document.getElementById('app');
+    app.classList.toggle('ancha', nombre === 'admin');
     try {
       if (nombre === 'admin') {
         AL.estado.admin = await AL.admin.preparar();
