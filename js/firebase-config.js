@@ -10,7 +10,7 @@
  */
 window.AL = window.AL || {};
 AL.config = {
-  version: '0.4.4',
+  version: '0.4.5',
   modo: 'firebase',
   firebase: {
     apiKey: 'AIzaSyCHGYALKXeSo1xyX43kaOhQjrwVBi8P8MY',

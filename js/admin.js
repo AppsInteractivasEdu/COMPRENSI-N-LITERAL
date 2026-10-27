@@ -5,6 +5,8 @@
   let D = null; // datos cargados una sola vez por visita al panel
   const F = { momento: '', cuento: '', subcat: '', pregunta: '', estudiante: '', intentos: 'primero', datos: 'todos' };
   const SUBS = Object.keys(AL.SUBCATS), MOMS = Object.keys(AL.MOMENTOS);
+  /* La comparación entre fases muestra solo diagnóstico inicial e intervención (el cierre no se grafica aquí). */
+  const MOMS_COMP = MOMS.filter(function (m) { return m !== 'cierre'; });
   const COLOR_MOM = { inicial: '--dato-m1', intervencion: '--dato-m2', cierre: '--dato-m3' };
   function faseDe(p) { return (D.C[p.cuentoId] || {}).fase || 'intervencion'; }
 
@@ -108,7 +110,7 @@
       g.n++; g.preguntas.add(r.preguntaId); g[r.subcategoria].n++;
       if (correcta(r)) g[r.subcategoria].c++;
     });
-    const con = MOMS.filter(function (m) { return R.comp[m].n; });
+    const con = MOMS_COMP.filter(function (m) { return R.comp[m].n; });
     if (con.length < 2) R.avisos.push('Hay respuestas en ' + con.length + ' fase(s). Se necesitan al menos dos para comparar.');
     else {
       const firma = con.map(function (m) { return Array.from(R.comp[m].preguntas).sort().join(','); });
@@ -154,7 +156,7 @@
     const pregsFiltro = D.preguntas.filter(function (p) { return (!F.cuento || p.cuentoId === F.cuento) && (!F.subcat || p.subcategoria === F.subcat); });
 
     cont.appendChild(h('section', { class: 'filtros', 'aria-label': 'Filtros' },
-      sel('f-momento', 'Fase', [['', 'Todas']].concat(MOMS.map(function (m) { return [m, AL.MOMENTOS[m]]; })), F.momento, cambia('momento')),
+      sel('f-momento', 'Fase', [['', 'Todas']].concat(MOMS_COMP.map(function (m) { return [m, AL.MOMENTOS[m]]; })), F.momento, cambia('momento')),
       sel('f-cuento', 'Cuento o actividad', [['', 'Todos']].concat(D.cuentos.map(function (c) { return [c.id, c.titulo]; })), F.cuento, cambia('cuento')),
       sel('f-subcat', 'Módulo y subcategoría', [['', 'Todas']].concat(SUBS.map(function (s) { return [s, 'M' + AL.SUBCATS[s].modulo + ' · ' + AL.SUBCATS[s].corto]; })), F.subcat, cambia('subcat')),
       sel('f-pregunta', 'Pregunta', [['', 'Todas']].concat(pregsFiltro.map(function (p) { return [p.id, p.orden + '. ' + p.enunciado.slice(0, 50)]; })), F.pregunta, cambia('pregunta')),
@@ -199,13 +201,13 @@
       h('h2', {}, 'Comparación entre fases'),
       h('p', { class: 'suave' }, 'Porcentaje de respuestas correctas por subcategoría. Esta sección no usa el filtro de fase.'),
       h('div', { class: 'lienzo' }, cvComp),
-      tabla(['Fase', 'Respuestas válidas', 'Preguntas distintas'].concat(SUBS.map(function (s) { return AL.SUBCATS[s].corto; })), MOMS.map(function (m) {
+      tabla(['Fase', 'Respuestas válidas', 'Preguntas distintas'].concat(SUBS.map(function (s) { return AL.SUBCATS[s].corto; })), MOMS_COMP.map(function (m) {
         const g = R.comp[m];
         return [AL.MOMENTOS[m], g.n, g.preguntas.size].concat(SUBS.map(function (s) { return g[s].n ? g[s].c + ' de ' + g[s].n + ' (' + U.pct(g[s].c, g[s].n) + ' %)' : '—'; }));
       })),
       h('ul', { class: 'notas' }, R.avisos.map(function (a) { return h('li', {}, a); }),
         h('li', {}, 'Las diferencias son descriptivas. No demuestran por sí solas que el cambio se deba a la intervención.'))));
-    AL.graficos.agrupadas(cvComp, SUBS.map(function (s) { return AL.SUBCATS[s].corto; }), MOMS.map(function (m) {
+    AL.graficos.agrupadas(cvComp, SUBS.map(function (s) { return AL.SUBCATS[s].corto; }), MOMS_COMP.map(function (m) {
       return { nombre: AL.MOMENTOS[m], color: COLOR_MOM[m],
         valores: SUBS.map(function (s) { const g = R.comp[m][s]; return g.n ? U.pct(g.c, g.n) : null; }),
         detalle: SUBS.map(function (s) { const g = R.comp[m][s]; return g.n ? g.c + ' de ' + g.n + ' correctas (' + U.pct(g.c, g.n) + ' %)' : ''; }) };
@@ -282,7 +284,7 @@
   }
   function exportarResumen(R) {
     const filas = [['fase', 'subcategoria', 'correctas', 'incorrectas', 'respuestas_validas', 'porcentaje_correctas', 'preguntas_distintas_de_la_fase']];
-    MOMS.forEach(function (m) { SUBS.forEach(function (s) {
+    MOMS_COMP.forEach(function (m) { SUBS.forEach(function (s) {
       const g = R.comp[m][s];
       filas.push([AL.MOMENTOS[m], AL.SUBCATS[s].nombre, g.c, g.n - g.c, g.n, g.n ? U.pct(g.c, g.n) : '', R.comp[m].preguntas.size]);
     }); });
