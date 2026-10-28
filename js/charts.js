@@ -57,6 +57,25 @@
     });
   }
 
+  /* Actividad de ordenar: cuántos estudiantes colocaron el acontecimiento correcto en cada posición. */
+  function posiciones(canvas, textos, aciertos, total, alElegir) {
+    return crear(canvas, {
+      type: 'bar',
+      data: {
+        labels: aciertos.map(function (_, k) { return (k + 1) + '.º lugar'; }),
+        datasets: [{ label: 'Lo colocaron bien', data: aciertos, borderRadius: 4, maxBarThickness: 46, backgroundColor: tono('--dato-bien') }]
+      },
+      options: base(function (o) {
+        o.scales.y.max = Math.max(total, 1);
+        o.plugins.tooltip.callbacks = {
+          title: function (it) { return (it[0].dataIndex + 1) + '.º: ' + textos[it[0].dataIndex]; },
+          label: function (it) { return it.parsed.y + ' de ' + total + ' (' + AL.ui.pct(it.parsed.y, total) + ' %)'; }
+        };
+        o.onClick = function (ev, el) { if (el.length && alElegir) alElegir(el[0].index); };
+      })
+    });
+  }
+
   /* Barras apiladas: correctas, incorrectas y sin responder por subcategoría. */
   function apiladas(canvas, etiquetas, series) {
     return crear(canvas, {
@@ -92,5 +111,5 @@
     });
   }
 
-  AL.graficos = { limpiar: limpiar, opciones: opciones, apiladas: apiladas, agrupadas: agrupadas, disponible: disponible };
+  AL.graficos = { limpiar: limpiar, opciones: opciones, posiciones: posiciones, apiladas: apiladas, agrupadas: agrupadas, disponible: disponible };
 })(window.AL = window.AL || {});

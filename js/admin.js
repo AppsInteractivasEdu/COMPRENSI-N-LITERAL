@@ -83,12 +83,16 @@
     const R = { ses: ses, pregs: x.pregs, resp: x.resp, sub: {}, porPregunta: [], comp: {}, avisos: [] };
     SUBS.forEach(function (k) { R.sub[k] = { c: 0, i: 0, s: 0 }; });
     const porP = {};
-    x.pregs.forEach(function (p) { porP[p.id] = { p: p, conteo: [0, 0, 0, 0], c: 0, i: 0, sinResp: 0 }; R.porPregunta.push(porP[p.id]); });
+    x.pregs.forEach(function (p) { porP[p.id] = { p: p, conteo: [0, 0, 0, 0], pos: [], c: 0, i: 0, sinResp: 0 }; R.porPregunta.push(porP[p.id]); });
     let c = 0;
     x.resp.forEach(function (r) {
       const bien = correcta(r), q = porP[r.preguntaId];
       if (bien) { c++; q.c++; R.sub[r.subcategoria].c++; } else { q.i++; R.sub[r.subcategoria].i++; }
       if (q.p.tipo !== 'orden' && r.seleccion >= 0 && r.seleccion < 4) q.conteo[r.seleccion]++;
+      if (q.p.tipo === 'orden' && Array.isArray(r.seleccion) && D.claves[q.p.id] && D.claves[q.p.id].orden) {
+        const ko = D.claves[q.p.id].orden;
+        ko.forEach(function (id, k) { if (q.pos[k] === undefined) q.pos[k] = 0; if (r.seleccion[k] === id) q.pos[k]++; });
+      }
     });
     let sinResp = 0, actComp = 0, actPend = 0;
     ses.forEach(function (s) {
@@ -222,7 +226,23 @@
         h('p', { class: 'eti' }, (D.C[p.cuentoId] ? D.C[p.cuentoId].titulo : '') + ' · ' + AL.SUBCATS[p.subcategoria].corto + (p.publicada ? '' : ' · No publicada')),
         h('h3', {}, p.orden + '. ' + p.enunciado));
       if (p.tipo === 'orden') {
-        tarjeta.appendChild(h('p', {}, 'Actividad de ordenamiento: ' + q.c + ' correctas y ' + q.i + ' incorrectas.'));
+        tarjeta.appendChild(h('p', {}, 'Actividad de ordenamiento: ' + q.c + ' con el orden completo correcto y ' + q.i + ' con algún error.'));
+        const ko = D.claves[p.id] && D.claves[p.id].orden;
+        if (ko && validas) {
+          const texto = {}; (p.elementos || []).forEach(function (e) { texto[e.id] = e.texto; });
+          const textos = ko.map(function (id) { return texto[id] || ''; });
+          const aciertos = ko.map(function (_, k) { return q.pos[k] || 0; });
+          const cv = h('canvas', { role: 'img', 'aria-label': 'Estudiantes que colocaron bien cada posición' });
+          const detalle = h('p', { class: 'suave', role: 'status' }, 'Cada barra cuenta cuántos colocaron bien ese lugar. Toque una barra para ver el hecho.');
+          tarjeta.appendChild(h('div', { class: 'lienzo bajo' }, cv));
+          tarjeta.appendChild(detalle);
+          tarjeta.appendChild(h('ul', { class: 'lista-opciones' }, textos.map(function (t, k) {
+            return h('li', {}, h('strong', {}, (k + 1) + '.º'), h('span', {}, t), h('span', { class: 'num' }, aciertos[k] + ' · ' + U.pct(aciertos[k], validas) + ' %'));
+          })));
+          AL.graficos.posiciones(cv, textos, aciertos, validas, function (k) {
+            detalle.textContent = (k + 1) + '.º lugar: «' + textos[k] + '» lo colocaron bien ' + aciertos[k] + ' de ' + validas + ' (' + U.pct(aciertos[k], validas) + ' %).';
+          });
+        }
       } else {
         const cv = h('canvas', { role: 'img', 'aria-label': 'Veces que se eligió cada opción' });
         const detalle = h('p', { class: 'suave', role: 'status' }, 'Toque una barra para ver el texto de la opción.');
